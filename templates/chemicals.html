@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Harmful Chemicals - CosmoSafe</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <header>
+        <div class="header-content">
+            <h1>🧴 CosmoSafe</h1>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/chemicals">Harmful Chemicals List</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <h2>⚠️ Top 30 Most Reported Harmful Chemicals in Cosmetics</h2>
+        <p>These chemicals are reported to California CDPH as potentially harmful:</p>
+
+        <table class="chemicals-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Chemical Name</th>
+                    <th>Times Reported</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for chem in chemicals %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ chem.Chemical }}</td>
+                    <td>{{ chem.ReportCount }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </main>
+
+    <footer>
+        <p>CosmoSafe © 2026 | Data sourced from California CDPH</p>
+    </footer>
+
+</body>
+</html>

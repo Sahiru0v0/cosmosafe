@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CosmoSafe - Cosmetic Safety Checker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <h1>🧴 CosmoSafe</h1>
+            <p>Check if your cosmetic product is safe to use</p>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/chemicals">Harmful Chemicals List</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main>
+
+        <!-- Search Section -->
+        <section class="search-section">
+
+            <!-- Manual Search -->
+            <div class="search-box">
+                <h2>🔍 Search by Product / Brand Name</h2>
+                <form action="/search" method="POST">
+                    <input
+                        type="text"
+                        name="product_name"
+                        placeholder="e.g. Lakme, Dove, NYX, lipstick..."
+                        required
+                    >
+                    <button type="submit">Check Safety</button>
+                </form>
+            </div>
+
+            <div class="divider">OR</div>
+
+            <!-- Image Upload -->
+            <div class="search-box">
+                <h2>📷 Scan Product Label</h2>
+                <form action="/scan" method="POST" enctype="multipart/form-data">
+                    <input type="file" name="product_image" accept="image/*" required>
+                    <button type="submit">Scan Image</button>
+                </form>
+            </div>
+
+        </section>
+
+        <!-- Message -->
+        {% if message %}
+        <section class="message-section">
+            <p class="message">⚠️ {{ message }}</p>
+        </section>
+        {% endif %}
+
+        <!-- OCR extracted text - editable -->
+        {% if extracted_text %}
+        <section class="extracted-section">
+            <h3>📝 Text extracted from image:</h3>
+            <form action="/search" method="POST">
+                <input
+                    type="text"
+                    name="product_name"
+                    value="{{ extracted_text }}"
+                >
+                <button type="submit">Search with this text</button>
+            </form>
+        </section>
+        {% endif %}
+
+        <!-- Result -->
+        {% if result %}
+        <section class="result-section">
+
+            <!-- Risk Badge -->
+            <div class="risk-badge" style="background-color: {{ result.color }}">
+                {{ result.risk_level }}
+            </div>
+
+            <h2>Safety Report</h2>
+            <p class="risk-message">{{ result.message }}</p>
+
+            <!-- Product Info -->
+            <div class="result-grid">
+                <div class="result-card">
+                    <h3>Product Details</h3>
+                    <table>
+                        <tr>
+                            <td><strong>Product</strong></td>
+                            <td>{{ result.product }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Brand</strong></td>
+                            <td>{{ result.brand }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Category</strong></td>
+                            <td>{{ result.category }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Source</strong></td>
+                            <td>{{ result.source }}</td>
+                        </tr>
+                        {% if result.price != 'N/A' %}
+                        <tr>
+                            <td><strong>Price</strong></td>
+                            <td>₹{{ result.price }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if result.rating != 'N/A' %}
+                        <tr>
+                            <td><strong>Rating</strong></td>
+                            <td>⭐ {{ result.rating }}/5</td>
+                        </tr>
+                        {% endif %}
+                    </table>
+                </div>
+
+                <div class="result-card">
+                    <h3>Risk Analysis</h3>
+                    <table>
+                        <tr>
+                            <td><strong>Risk Score</strong></td>
+                            <td>{{ result.risk_score }}/10</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Risk Level</strong></td>
+                            <td style="color: {{ result.color }}">
+                                <strong>{{ result.risk_level }}</strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Harmful Chemicals Found</strong></td>
+                            <td>{{ result.harmful_chemical_count }}</td>
+                        </tr>
+                    </table>
+
+                    <!-- Chemicals list -->
+                    {% if result.chemicals %}
+                    <h4>Harmful Chemicals:</h4>
+                    <ul class="chemicals-list">
+                        {% for chem in result.chemicals %}
+                        <li>⚠️ {{ chem }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p style="color: green">✅ No harmful chemicals detected!</p>
+                    {% endif %}
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Recommendations -->
+        {% if recommendations %}
+        <section class="recommendations-section">
+            <h2>✅ Safer Alternatives</h2>
+            <p>These products have lower risk scores in the same category:</p>
+            <div class="recommendations-grid">
+                {% for rec in recommendations %}
+                <div class="rec-card">
+                    <h4>{{ rec.product[:50] }}...</h4>
+                    <p><strong>Brand:</strong> {{ rec.brand }}</p>
+                    <p><strong>Risk Level:</strong>
+                        <span class="risk-tag risk-{{ rec.risk_level|lower|replace(' ', '-') }}">
+                            {{ rec.risk_level }}
+                        </span>
+                    </p>
+                    <p><strong>Risk Score:</strong> {{ rec.risk_score }}/10</p>
+                    {% if rec.rating %}
+                    <p><strong>Rating:</strong> ⭐ {{ rec.rating }}/5</p>
+                    {% endif %}
+                    {% if rec.price %}
+                    <p><strong>Price:</strong> ₹{{ rec.price }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Safer Brands -->
+        {% if safer_brands %}
+        <section class="brands-section">
+            <h2>🏆 Safer Brands in This Category</h2>
+            <div class="brands-grid">
+                {% for brand in safer_brands %}
+                <div class="brand-card">
+                    <h4>{{ brand.brand }}</h4>
+                    <p>Avg Risk Score: {{ "%.1f"|format(brand.AvgRiskScore) }}/10</p>
+                    <p>Avg Rating: ⭐ {{ "%.1f"|format(brand.AvgRating) }}/5</p>
+                    <p>Products: {{ brand.ProductCount }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        {% endif %}
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>CosmoSafe © 2026 | Data sourced from California CDPH & Indian Market Database</p>
+        <p>⚠️ This tool is for informational purposes only. Consult a dermatologist for medical advice.</p>
+    </footer>
+
+</body>
+</html>
