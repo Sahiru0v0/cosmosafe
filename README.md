@@ -13,7 +13,7 @@ Python 3.12, Flask, Pandas, EasyOCR, RapidFuzz, Scikit-learn
 
 ## Dataset
 - California CDPH Chemicals in Cosmetics dataset
-- Indian e-commerce cosmetics dataset
+- Indian e-commerce cosmetics dataset (not accurate) gonna remove this later
 
 ## SDG Alignment
 SDG 3 — Good Health and Well-Being
@@ -26,4 +26,4 @@ python app.py
 ```
 
 ## Author
-Sahil Khurana — VIPS-TC, New Delhi
+Sahil Khurana and Claude
